@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Ambientes
+.venv/
+env/
+venv/
+
+# Dados gerados
+logs/
+model/
+*.joblib
+
+# SO & editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env vars
+.env

@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ambientes
+.venv/
+env/
+venv/
+
+# Dados gerados
+logs/
+model/
+*.joblib
+
+# SO & editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env vars
+.env
