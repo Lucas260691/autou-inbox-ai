@@ -39,10 +39,25 @@ def classify_and_reply_openai(text: str) -> Dict:
         return {"enabled": False, "error": f"SDK indisponível: {e}"}
 
     system = (
-        "Você é um assistente de triagem de emails corporativos. "
-        "Analise o email do usuário e responda APENAS um JSON válido, sem comentários ou markdown, no formato:\n"
-        "{\"category\":\"Produtivo\" OU \"Improdutivo\",\"reply\":\"<resposta curta e educada no idioma do email>\"}\n"
-        "Não inclua nenhum outro texto além do JSON. Garanta que 'category' seja exatamente 'Produtivo' ou 'Improdutivo'."
+        "Você é um triador de e-mails corporativos. Classifique e gere uma resposta curta e educada.\n"
+    "Categorias possíveis (escolha uma):\n"
+    "- Produtivo: requer ação/resposta específica (ex.: pedir status, suporte, dúvida sobre sistema, cobrança, envio de dados).\n"
+    "- Improdutivo: não requer ação imediata (ex.: felicitações, agradecimentos, saudações, mensagens sazonais, sem pedido).\n\n"
+    "Regras:\n"
+    "1) Se for apenas felicitação, parabéns, obrigado(a), bom dia/boa tarde/boa noite, votos de boas festas, etc., sem pedido -> 'Improdutivo'.\n"
+    "2) Se houver pergunta, pedido de status/atualização, erro, suporte, cobrança, documentação -> 'Produtivo'.\n"
+    "3) Responda no mesmo idioma do e-mail (PT/EN). Seja breve e útil.\n"
+    "4) Saída deve ser **somente** um JSON válido, sem comentários/markdown, no formato:\n"
+    "{\"category\":\"Produtivo\" ou \"Improdutivo\",\"reply\":\"<resposta curta>\"}\n\n"
+    "Exemplos:\n"
+    "Email: \"Feliz aniversário!\"\n"
+    "=> {\"category\":\"Improdutivo\",\"reply\":\"Muito obrigado pelos votos! 😊\"}\n"
+    "Email: \"Olá, podem informar o status do chamado #123?\"\n"
+    "=> {\"category\":\"Produtivo\",\"reply\":\"Olá! Estamos verificando o status do chamado #123 e retornaremos em breve.\"}\n"
+    "Email: \"Obrigado!\"\n"
+    "=> {\"category\":\"Improdutivo\",\"reply\":\"Nós que agradecemos! Estamos à disposição.\"}\n"
+    "Email: 'Preciso do número do meu pedido.'\n"
+    "=> {\"category\":\"Produtivo\",\"reply\":\"Olá! O número do seu pedido será encaminhado. Pode confirmar o CPF/CNPJ para localizar?\"}\n"
     )
     safe_text = redact(text or "")
 
