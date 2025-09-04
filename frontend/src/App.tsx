@@ -3,46 +3,51 @@ import TextForm from "./components/TextForm";
 import DropUpload from "./components/DropUpload";
 import ResultCard from "./components/ResultCard";
 import type { PredictOut } from "./lib/types";
+import Header from "./components/Header";
+import EmptyState from "./components/EmptyState";
+import SkeletonCard from "./components/SkeletonCard";
 
 type Tab = "texto" | "arquivo";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("texto");
   const [result, setResult] = useState<PredictOut | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [prefill, setPrefill] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="px-6 py-4 border-b bg-white">
-        <div className="mx-auto max-w-5xl flex items-center justify-between">
-          <h1 className="text-xl font-semibold">AutoU Inbox AI</h1>
-          <nav className="flex gap-2">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 dark:text-neutral-100">
+      <Header />
+      <div className="border-b bg-white/60 backdrop-blur dark:bg-neutral-900/60">
+        <div className="mx-auto max-w-5xl px-6 py-3">
+          <div className="inline-flex rounded-xl border p-1 dark:border-neutral-800">
             <button
-              className={`px-3 py-1.5 rounded-lg border ${tab==="texto" ? "bg-black text-white" : ""}`}
+              className={`px-3 py-1.5 rounded-lg text-sm ${tab==="texto" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
               onClick={() => setTab("texto")}
-            >
-              Texto
-            </button>
+            >Texto</button>
             <button
-              className={`px-3 py-1.5 rounded-lg border ${tab==="arquivo" ? "bg-black text-white" : ""}`}
+              className={`px-3 py-1.5 rounded-lg text-sm ${tab==="arquivo" ? "bg-black text-white dark:bg-white dark:text-black" : ""}`}
               onClick={() => setTab("arquivo")}
-            >
-              Arquivo
-            </button>
-          </nav>
+            >Arquivo</button>
+          </div>
         </div>
-      </header>
+      </div>
 
       <main className="px-6 py-8">
         <div className="mx-auto max-w-5xl">
           <div className="grid gap-6 md:grid-cols-2">
-            <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <section className="rounded-2xl border bg-white p-5 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
               <h2 className="text-lg font-medium mb-3">
                 {tab === "texto" ? "Analisar texto" : "Enviar arquivo"}
               </h2>
               {tab === "texto" ? (
-                <TextForm onResult={setResult} />
+                <TextForm
+                  onResult={setResult}
+                  onLoading={setLoading}
+                  prefillText={prefill}
+                />
               ) : (
-                <DropUpload onResult={setResult} />
+                <DropUpload onResult={setResult} onLoading={setLoading} />
               )}
               <p className="mt-3 text-xs opacity-60">
                 O conteúdo não é armazenado; processamos apenas para classificar e sugerir resposta.
@@ -50,18 +55,26 @@ export default function App() {
             </section>
 
             <section>
-              <ResultCard data={result} onClear={() => setResult(null)} />
+              {loading ? (
+                <SkeletonCard />
+              ) : result ? (
+                <ResultCard data={result} onClear={() => setResult(null)} />
+              ) : (
+                <EmptyState onPick={(t) => {
+                  setTab("texto");
+                  setPrefill(t);
+                }} />
+              )}
             </section>
           </div>
         </div>
       </main>
 
-      <footer className="px-6 py-6 border-t bg-white">
+      <footer className="px-6 py-6 border-t bg-white dark:bg-neutral-900 dark:border-neutral-800">
         <div className="mx-auto max-w-5xl text-sm opacity-70">
-          Conectado a <code>/api</code> via proxy (Nginx). Use <code>docker compose up --build</code>.
+          © {new Date().getFullYear()} AutoU Inbox AI. Desenvolvido por{"AutoU"}
         </div>
       </footer>
     </div>
   );
 }
-

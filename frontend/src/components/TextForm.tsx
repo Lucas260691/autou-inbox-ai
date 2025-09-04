@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,25 +9,38 @@ const schema = z.object({
   text: z.string().min(8, "Digite pelo menos 8 caracteres."),
 });
 
-type Props = { onResult: (r: PredictOut) => void };
+type Props = {
+  onResult: (r: PredictOut) => void;
+  onLoading?: (v: boolean) => void;
+  prefillText?: string | null;
+};
 
-export default function TextForm({ onResult }: Props) {
-  const { register, handleSubmit, formState, reset } = useForm<z.infer<typeof schema>>({
+export default function TextForm({ onResult, onLoading, prefillText }: Props) {
+  const { register, handleSubmit, formState, reset, setValue } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { text: "" },
   });
   const { errors, isSubmitting } = formState;
 
+  useEffect(() => {
+    if (prefillText) setValue("text", prefillText);
+  }, [prefillText, setValue]);
+
   async function onSubmit(v: z.infer<typeof schema>) {
-    const res = await predictText(v.text);
-    onResult(res);
+    try {
+      onLoading?.(true);
+      const res = await predictText(v.text);
+      onResult(res);
+    } finally {
+      onLoading?.(false);
+    }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
       <textarea
         {...register("text")}
-        className="w-full rounded-2xl border p-4 outline-none focus:ring-2 min-h-[140px]"
+        className="w-full rounded-2xl border p-4 outline-none focus:ring-2 min-h-[140px] dark:bg-neutral-900 dark:border-neutral-800"
         placeholder="Cole aqui o conteúdo do e-mail..."
       />
       {errors.text && <div className="text-sm text-red-600">{errors.text.message}</div>}
@@ -34,14 +48,14 @@ export default function TextForm({ onResult }: Props) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50"
+          className="px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50 dark:bg-white dark:text-black"
         >
           {isSubmitting ? "Analisando..." : "Analisar"}
         </button>
         <button
           type="button"
           onClick={() => reset({ text: "" })}
-          className="px-4 py-2 rounded-xl border"
+          className="px-4 py-2 rounded-xl border dark:border-neutral-700"
         >
           Limpar
         </button>
